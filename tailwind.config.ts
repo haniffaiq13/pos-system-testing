@@ -6,9 +6,11 @@ export default {
   theme: {
     extend: {
       borderRadius: {
-        lg: ".5625rem", /* 9px */
-        md: ".375rem", /* 6px */
-        sm: ".1875rem", /* 3px */
+        lg: "1rem", /* 16px - rounded-2xl for PointHub */
+        md: ".5rem", /* 8px */
+        sm: ".25rem", /* 4px */
+        xl: "1rem", /* 16px */
+        "2xl": "1rem", /* 16px - main card radius */
       },
       colors: {
         // Flat / base colors (regular buttons)

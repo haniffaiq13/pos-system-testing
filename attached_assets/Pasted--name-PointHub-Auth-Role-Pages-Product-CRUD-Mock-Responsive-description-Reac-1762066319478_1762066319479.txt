@@ -1,0 +1,131 @@
+{
+  "name": "PointHub – Auth + Role Pages + Product CRUD (Mock, Responsive)",
+  "description": "React + Vite + TypeScript + Tailwind + Zustand + React Query + shadcn/ui + framer-motion. Login/Register, role-based routing (user/pos/admin), product CRUD with dummy data, mobile-first responsive. Mock API by default; switchable to real API via env.",
+  "instructions": {
+    "goals": [
+      "Build a SPA with Login/Register, role-based protected pages (user, pos, admin).",
+      "Implement Product CRUD (create/read/update/delete) using dummy data stored in localStorage.",
+      "Keep API layer modular (mockAdapter vs realAdapter).",
+      "Ensure fully responsive UI with mobile-first layouts."
+    ],
+    "auth": {
+      "routes": ["/auth/login", "/auth/register", "/auth/logout"],
+      "mock": "Persist session in localStorage (namespace: pointhub:*). Register creates a new user; Login swaps session. Provide RoleSwitcher for demo.",
+      "sessionShape": "{ userId: string, role: 'user' | 'pos' | 'admin', outletId?: string }"
+    },
+    "routing": {
+      "guards": "<RequireRole roles={[]}> wraps protected routes",
+      "roleEntrypoints": {
+        "user": "/",
+        "pos": "/pos/sale",
+        "admin": "/admin/overview"
+      }
+    },
+    "features": {
+      "global": [
+        "Navbar with RoleSwitcher, Cart (for user), and Auth controls",
+        "Toast notifications; error boundaries; loading states",
+        "Mobile-first responsive design; stacked cards on small screens"
+      ],
+      "userApp": [
+        "/ : Marketplace grid (image, name, price, Add to Cart)",
+        "/checkout : PriceSummary, voucher input, 'Pay (Simulate)' -> PENDING -> auto PAID (3s)",
+        "/me : points badge, progress ring, mini ledger",
+        "/vouchers : redeem presets (100->50k, 200->100k, 500->300k) -> code + expiry + min spend",
+        "/orders : order history table/cards (responsive)"
+      ],
+      "posApp": [
+        "/pos/sale : Quick Sale (NumberPad or choose products), customer email/phone creation if not found, voucher input (50% cap), Charge -> toast '+X points'",
+        "/pos/redeem : scan/type voucher -> show value/minSpend/status -> Apply",
+        "/pos/customers : search customer -> balance & recent ledger",
+        "/pos/reports : outlet daily summary (mock)"
+      ],
+      "adminApp": [
+        "/admin/overview : KPIs + 7-day chart",
+        "/admin/products : **Product CRUD** (table + drawer form). Fields: {id, sku, name, price, image, active}. Search, sort, pagination (client-side).",
+        "/admin/campaigns : accrualPer(10000), redeemValue(500), discountCapPct(50), expiryDays(90) + preview",
+        "/admin/vouchers : issued vouchers (ACTIVE/USED/EXPIRED)",
+        "/admin/merchants : outlets list + price/stock overrides (mock)",
+        "/admin/users : list users (email, points, orders)",
+        "/admin/tools : Mark Paid, Issue Voucher, Reset Storage"
+      ]
+    },
+    "businessRules": {
+      "points": "points = floor(total / accrualPer), default accrualPer=10000",
+      "redeemValue": "valueRp = points * 500",
+      "discountCap": "discount <= floor(subtotal * 0.5)",
+      "minSpend": "minSpendRp = max(50000, valueRp * 2)",
+      "voucherUsage": "voucher becomes USED when order becomes PAID",
+      "webhookSim": "PENDING -> auto PAID after 3s (idempotent)"
+    },
+    "structure": {
+      "folders": [
+        "app/{routes.tsx, guards.tsx, layout/{PublicLayout,UserLayout,PosLayout,AdminLayout}.tsx}",
+        "pages/auth/{Login.tsx, Register.tsx}",
+        "pages/user/{Home.tsx, Checkout.tsx, Profile.tsx, Vouchers.tsx, Orders.tsx}",
+        "pages/pos/{QuickSale.tsx, Redeem.tsx, Customers.tsx, Reports.tsx}",
+        "pages/admin/{Overview.tsx, Products.tsx, Campaigns.tsx, Vouchers.tsx, Merchants.tsx, Users.tsx, Tools.tsx}",
+        "components/{ProductCard, CartDrawer, PriceSummary, VoucherApply, PointsBadge, ProgressRing, NumberPad, DataTable, Charts, RoleSwitcher, Toast}",
+        "store/{session, catalog, cart, orders, loyalty, admin}.ts",
+        "api/{client, endpoints, mockAdapter, realAdapter, index}.ts",
+        "utils/{money, rules, persist, responsive}.ts",
+        "types/domain.ts"
+      ]
+    },
+    "productCRUD": {
+      "page": "/admin/products",
+      "table": "shadcn/ui DataTable (columns: SKU, Name, Price(IDR), Active, Actions)",
+      "actions": "Create (drawer), Edit (drawer), Delete (confirm). Client-side validation: required fields, price >= 0.",
+      "storage": "Persist to localStorage; support soft delete or hard delete (hard is fine for mock).",
+      "searchSort": "Client sorting by price/name, debounce search by name/SKU"
+    },
+    "apiAdapter": {
+      "env": { "VITE_API_BASE_URL": "http://localhost:8080", "VITE_USE_MOCKS": "true" },
+      "index": "export const api = import.meta.env.VITE_USE_MOCKS !== 'false' ? mockApi : realApi",
+      "interface": [
+        "getProducts, createProduct, updateProduct, deleteProduct",
+        "previewPrice, createCheckout, getOrders, markPaid",
+        "getPoints, redeemVoucher, validateVoucher, getVouchers",
+        "getCampaign, updateCampaign, getUsers, getOutlets",
+        "auth: register, login, getSession, logout (mocked; real adapter ready)"
+      ],
+      "mock": [
+        "All entities persisted to localStorage (namespace: pointhub:*)",
+        "rules.ts for pricing/points/discount cap",
+        "setTimeout(markPaid, 3000) for webhook simulation"
+      ]
+    },
+    "uiTheme": {
+      "primary": "#0D9488",
+      "background": "#F0FDF4",
+      "style": "rounded-2xl, soft shadows, mobile-first; cards stack on small screens; tables collapse to cards"
+    },
+    "seed": {
+      "accounts": [
+        { "email": "admin@demo.io", "role": "admin" },
+        { "email": "pos@demo.io", "role": "pos", "outletId": "outlet-jakarta-a" },
+        { "email": "hanif@demo.io", "role": "user" }
+      ],
+      "products": "Seed 6 products (IDR 60k–400k) with images",
+      "tools": "/admin/tools: Issue Voucher, Mark Paid, Reset Storage"
+    },
+    "acceptance": [
+      "Login/Register works; role redirects to the correct home page.",
+      "Admin can Create/Edit/Delete products; results persist and show in User/POS product lists.",
+      "User can buy, order becomes PAID after 3s, points increase on /me.",
+      "Redeem 200 points -> apply on next order; discount capped at 50%.",
+      "POS quick-sale 350k with voucher 100k -> Charge -> points added.",
+      "Toggle VITE_USE_MOCKS=false -> app calls realAdapter without build errors.",
+      "All pages responsive on mobile (≤390px) and desktop."
+    ]
+  },
+  "envExample": {
+    "VITE_API_BASE_URL": "http://localhost:8080",
+    "VITE_USE_MOCKS": "true"
+  },
+  "scripts": {
+    "dev": "npm run dev",
+    "lint": "npm run lint",
+    "typecheck": "npm run typecheck"
+  }
+}
