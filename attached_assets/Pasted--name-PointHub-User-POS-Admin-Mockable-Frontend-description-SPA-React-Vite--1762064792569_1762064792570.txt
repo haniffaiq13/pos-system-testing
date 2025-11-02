@@ -1,0 +1,106 @@
+{
+  "name": "PointHub (User / POS / Admin) – Mockable Frontend",
+  "description": "SPA React + Vite + TypeScript + Tailwind + Zustand + React Query + shadcn/ui + framer-motion dengan tiga peran: user, pos, admin. Default pakai mock data (localStorage), tapi API layer modular bisa diganti ke backend nyata lewat env.",
+  "instructions": {
+    "target": "Bangun aplikasi PointHub dengan tiga role (user, pos, admin) berbasis React + Vite. Default dummy data namun API modular agar bisa diarahkan ke backend melalui VITE_API_BASE_URL dan VITE_USE_MOCKS.",
+    "features": {
+      "global": [
+        "RoleSwitcher di navbar untuk memilih sesi demo (user, pos, admin)",
+        "Auth & data disimpan di localStorage (pointhub:*)",
+        "<RequireRole roles={[]}> untuk proteksi rute"
+      ],
+      "userApp": [
+        "/ : Marketplace – grid produk (gambar, harga, tombol Add)",
+        "/checkout : ringkasan PriceSummary + voucher + tombol 'Bayar via Xendit (Simulate)' → PENDING → auto PAID 3 detik",
+        "/me : saldo poin, progress ke voucher berikut, mini ledger",
+        "/vouchers : redeem paket (100→50k, 200→100k, 500→300k) → tampilkan kode, expiry, min spend",
+        "/orders : histori order"
+      ],
+      "posApp": [
+        "/pos/sale : Quick Sale (NumberPad, pilih produk, input customer, input voucher, cap 50%, Charge → toast '+X poin')",
+        "/pos/redeem : scan/ketik kode voucher → value/minSpend/status → Apply",
+        "/pos/customers : cari customer, lihat saldo & history",
+        "/pos/reports : ringkasan outlet (mock)"
+      ],
+      "adminApp": [
+        "/admin/overview : KPI & chart 7 hari",
+        "/admin/products : katalog CRUD mock",
+        "/admin/campaigns : atur accrualPer(10000), redeemValue(500), discountCapPct(50), expiryDays(90)",
+        "/admin/vouchers : list voucher ACTIVE/USED/EXPIRED",
+        "/admin/merchants : daftar outlet + override harga/stock",
+        "/admin/users : list user (email, saldo poin, total order)",
+        "/admin/tools : Mark Paid, Issue Voucher, Reset Storage"
+      ]
+    },
+    "businessRules": {
+      "pointsFormula": "points = floor(total / accrualPer)",
+      "defaultValues": {
+        "accrualPer": 10000,
+        "redeemValue": 500,
+        "discountCapPct": 50,
+        "expiryDays": 90
+      },
+      "minSpendFormula": "minSpendRp = max(50000, valueRp * 2)",
+      "webhookSimulation": "Order PENDING → auto PAID setelah 3 detik (idempotent)"
+    },
+    "structure": {
+      "src": [
+        "app/{routes.tsx, guards.tsx, layout/...}",
+        "pages/{user, pos, admin}",
+        "components/{ProductCard, CartDrawer, PriceSummary, VoucherApply, PointsBadge, ProgressRing, NumberPad, DataTable, Charts, RoleSwitcher, Toast}",
+        "store/{session, catalog, cart, orders, loyalty, admin}.ts",
+        "api/{client, endpoints, mockAdapter, realAdapter, index}.ts",
+        "utils/{money, rules, persist}.ts",
+        "types/domain.ts"
+      ]
+    },
+    "apiAdapterPattern": {
+      "env": {
+        "VITE_API_BASE_URL": "http://localhost:8080",
+        "VITE_USE_MOCKS": "true"
+      },
+      "indexExample": "export const api = import.meta.env.VITE_USE_MOCKS !== 'false' ? mockApi : realApi",
+      "mainEndpoints": [
+        "getProducts", "previewPrice", "createCheckout", "getOrders", "markPaid",
+        "getPoints", "redeemVoucher", "validateVoucher", "getVouchers",
+        "getCampaign", "updateCampaign", "getUsers", "getOutlets"
+      ],
+      "mockBehavior": [
+        "Persist semua entity ke localStorage",
+        "Gunakan utils/rules.ts untuk harga, cap, accrual",
+        "Simulasi webhook dengan setTimeout(markPaid, 3000)"
+      ]
+    },
+    "uiTheme": {
+      "primaryColor": "#0D9488",
+      "backgroundColor": "#F0FDF4",
+      "style": "rounded-2xl, soft shadows",
+      "animation": "framer-motion untuk toast dan modal"
+    },
+    "seedDemo": {
+      "accounts": [
+        "admin@demo.io (admin)",
+        "pos@demo.io (pos, outlet Jakarta A)",
+        "hanif@demo.io (user)"
+      ],
+      "products": "6 produk harga 60k–400k",
+      "adminTools": ["/admin/tools dengan tombol Issue Voucher, Mark Paid, Reset Storage"]
+    },
+    "acceptance": [
+      "User beli → order PAID → poin bertambah di /me",
+      "User redeem 200 poin → pakai → diskon kena cap 50%",
+      "POS quick-sale 350k → voucher 100k → poin masuk",
+      "Admin ubah accrualPer=5000 → poin transaksi sesuai rule",
+      "Toggle VITE_USE_MOCKS=false → gunakan realAdapter tanpa error"
+    ]
+  },
+  "scripts": {
+    "dev": "npm run dev",
+    "lint": "npm run lint",
+    "typecheck": "npm run typecheck"
+  },
+  "envExample": {
+    "VITE_API_BASE_URL": "http://localhost:8080",
+    "VITE_USE_MOCKS": "true"
+  }
+}
