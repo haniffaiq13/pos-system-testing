@@ -2,7 +2,7 @@
   command = "vite build"
   publish = "dist"
 
-# SPA fallback (WAJIB)
+# SPA fallback (fix 404 on refresh/deep links)
 [[redirects]]
   from = "/*"
   to = "/index.html"
