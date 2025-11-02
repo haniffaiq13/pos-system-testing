@@ -9,6 +9,9 @@ import { AdminSidebar } from "@/components/AdminSidebar";
 import { RequireRole } from "@/components/RequireRole";
 import { useSessionStore } from "@/store/session";
 import { useEffect } from "react";
+import LoginPage from "@/pages/auth/Login";
+import RegisterPage from "@/pages/auth/Register";
+import { ROLE_HOME } from "@/utils/routes";
 
 // User Pages
 import Marketplace from "@/pages/user/Marketplace";
@@ -28,27 +31,31 @@ import Users from "@/pages/admin/Users";
 import Tools from "@/pages/admin/Tools";
 
 function Router() {
-  const { currentUser, setCurrentUser } = useSessionStore();
+  const { currentUser } = useSessionStore();
   const [location, setLocation] = useLocation();
 
-  // Initialize with default user if none selected
+  const isAuthRoute =
+    location.startsWith("/login") || location.startsWith("/register");
+
   useEffect(() => {
-    if (!currentUser) {
-      // Auto-select hanif@demo.io as default user
-      import("@/api").then(({ api }) => {
-        api.getUserByEmail("hanif@demo.io").then((user) => {
-          if (user) setCurrentUser(user);
-        });
-      });
+    if (!currentUser && !isAuthRoute) {
+      setLocation("/login");
     }
-  }, [currentUser, setCurrentUser]);
+  }, [currentUser, isAuthRoute, setLocation]);
 
   // Role-based redirects - enforce proper role routing
   useEffect(() => {
     if (!currentUser) return;
+    if (isAuthRoute) {
+      const defaultPath = ROLE_HOME[currentUser.role];
+      if (location !== defaultPath) {
+        setLocation(defaultPath);
+      }
+      return;
+    }
 
     const role = currentUser.role;
-    
+
     // Redirect to appropriate default page based on role
     if (role === 'admin' && !location.startsWith('/admin')) {
       setLocation('/admin/overview');
@@ -57,23 +64,34 @@ function Router() {
     } else if (role === 'user' && (location.startsWith('/admin') || location.startsWith('/pos'))) {
       setLocation('/');
     }
-  }, [currentUser, location, setLocation]);
+  }, [currentUser, location, isAuthRoute, setLocation]);
 
-  const role = currentUser?.role || 'user';
+  const role = currentUser?.role;
+
+  const showShell = !isAuthRoute;
+  const showSidebar = showShell && (role === "admin" || role === "pos");
+  const showUserNav = showShell && role === "user";
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
-      
+      {showShell && <Navbar />}
+
       <div className="flex flex-1">
         {/* Sidebar for Admin/POS */}
-        {(role === 'admin' || role === 'pos') && (
+        {showSidebar && role && (
           <AdminSidebar role={role} />
         )}
 
         {/* Main Content */}
         <div className="flex-1">
           <Switch>
+            <Route path="/login">
+              <LoginPage />
+            </Route>
+            <Route path="/register">
+              <RegisterPage />
+            </Route>
+
             {/* User Routes - require user role */}
             <Route path="/">
               <RequireRole roles={['user']}>
@@ -137,9 +155,9 @@ function Router() {
 
             {/* 404 */}
             <Route>
-              <div className="flex items-center justify-center min-h-screen">
+              <div className="flex min-h-screen items-center justify-center">
                 <div className="text-center">
-                  <h1 className="text-4xl font-bold mb-4">404</h1>
+                  <h1 className="mb-4 text-4xl font-bold">404</h1>
                   <p className="text-muted-foreground">Page not found</p>
                 </div>
               </div>
@@ -149,7 +167,7 @@ function Router() {
       </div>
 
       {/* Bottom Tab Bar for User on Mobile */}
-      {role === 'user' && <UserNav />}
+      {showUserNav && <UserNav />}
 
       <Toaster />
     </div>

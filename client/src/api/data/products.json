@@ -1,0 +1,56 @@
+[
+  {
+    "id": "prod-1",
+    "name": "Smartphone X Pro",
+    "description": "Latest flagship smartphone with advanced features",
+    "price": 400000,
+    "imageUrl": "/placeholder-phone.jpg",
+    "category": "Electronics",
+    "stock": 50
+  },
+  {
+    "id": "prod-2",
+    "name": "Wireless Earbuds",
+    "description": "Premium wireless earbuds with noise cancellation",
+    "price": 150000,
+    "imageUrl": "/placeholder-earbuds.jpg",
+    "category": "Electronics",
+    "stock": 100
+  },
+  {
+    "id": "prod-3",
+    "name": "Smart Watch",
+    "description": "Fitness tracker and smartwatch combo",
+    "price": 200000,
+    "imageUrl": "/placeholder-watch.jpg",
+    "category": "Electronics",
+    "stock": 75
+  },
+  {
+    "id": "prod-4",
+    "name": "Laptop Backpack",
+    "description": "Durable backpack with laptop compartment",
+    "price": 80000,
+    "imageUrl": "/placeholder-backpack.jpg",
+    "category": "Accessories",
+    "stock": 120
+  },
+  {
+    "id": "prod-5",
+    "name": "USB-C Hub",
+    "description": "7-in-1 USB-C hub with multiple ports",
+    "price": 60000,
+    "imageUrl": "/placeholder-hub.jpg",
+    "category": "Electronics",
+    "stock": 200
+  },
+  {
+    "id": "prod-6",
+    "name": "Portable Charger",
+    "description": "20000mAh fast charging power bank",
+    "price": 120000,
+    "imageUrl": "/placeholder-charger.jpg",
+    "category": "Electronics",
+    "stock": 150
+  }
+]

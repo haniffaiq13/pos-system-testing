@@ -19,7 +19,6 @@ import type {
 import { persist, retrieve, clearAll } from "@/utils/persist";
 import {
   previewPrice as calculatePreview,
-  calculatePointsEarned,
   calculateMinSpend,
   generateVoucherCode,
   calculateExpiryDate,
@@ -27,6 +26,7 @@ import {
   calculateNextVoucherProgress,
   VOUCHER_TIERS,
 } from "@/utils/rules";
+import productsSeed from "./data/products.json" assert { type: "json" };
 // Generate UUID
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -65,62 +65,9 @@ function initializeSeedData() {
   ];
 
   // Seed Products
-  const products: Product[] = [
-    {
-      id: 'prod-1',
-      name: 'Smartphone X Pro',
-      description: 'Latest flagship smartphone with advanced features',
-      price: 400000,
-      imageUrl: '/placeholder-phone.jpg',
-      category: 'Electronics',
-      stock: 50,
-    },
-    {
-      id: 'prod-2',
-      name: 'Wireless Earbuds',
-      description: 'Premium wireless earbuds with noise cancellation',
-      price: 150000,
-      imageUrl: '/placeholder-earbuds.jpg',
-      category: 'Electronics',
-      stock: 100,
-    },
-    {
-      id: 'prod-3',
-      name: 'Smart Watch',
-      description: 'Fitness tracker and smartwatch combo',
-      price: 200000,
-      imageUrl: '/placeholder-watch.jpg',
-      category: 'Electronics',
-      stock: 75,
-    },
-    {
-      id: 'prod-4',
-      name: 'Laptop Backpack',
-      description: 'Durable backpack with laptop compartment',
-      price: 80000,
-      imageUrl: '/placeholder-backpack.jpg',
-      category: 'Accessories',
-      stock: 120,
-    },
-    {
-      id: 'prod-5',
-      name: 'USB-C Hub',
-      description: '7-in-1 USB-C hub with multiple ports',
-      price: 60000,
-      imageUrl: '/placeholder-hub.jpg',
-      category: 'Electronics',
-      stock: 200,
-    },
-    {
-      id: 'prod-6',
-      name: 'Portable Charger',
-      description: '20000mAh fast charging power bank',
-      price: 120000,
-      imageUrl: '/placeholder-charger.jpg',
-      category: 'Electronics',
-      stock: 150,
-    },
-  ];
+  const products: Product[] = (productsSeed as Product[]).map((product) => ({
+    ...product,
+  }));
 
   // Seed Campaign
   const campaign: Campaign = {
@@ -163,6 +110,53 @@ function initializeSeedData() {
 class MockAdapter implements ApiAdapter {
   constructor() {
     initializeSeedData();
+  }
+
+  async login(email: string, password: string): Promise<User> {
+    const users = await this.getUsers();
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = users.find(
+      (item) => item.email.toLowerCase() === normalizedEmail,
+    );
+
+    if (!user || user.password !== password) {
+      throw new Error("Invalid email or password");
+    }
+
+    return user;
+  }
+
+  async register({
+    email,
+    password,
+    role = "user",
+    outletId = null,
+  }: {
+    email: string;
+    password: string;
+    role?: User["role"];
+    outletId?: string | null;
+  }): Promise<User> {
+    const normalizedEmail = email.trim().toLowerCase();
+    const users = await this.getUsers();
+
+    if (users.some((user) => user.email.toLowerCase() === normalizedEmail)) {
+      throw new Error("Email already registered");
+    }
+
+    const newUser: User = {
+      id: generateId(),
+      email: normalizedEmail,
+      password,
+      role,
+      outletId,
+      pointsBalance: 0,
+    };
+
+    users.push(newUser);
+    persist("users", users);
+
+    return newUser;
   }
 
   // Products

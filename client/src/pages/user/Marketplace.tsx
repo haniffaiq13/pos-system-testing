@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api";
 import { ProductCard } from "@/components/ProductCard";
-import { CartDrawer } from "@/components/CartDrawer";
 import { useCartStore } from "@/store/cart";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
@@ -17,12 +16,17 @@ import type { Product } from "@shared/schema";
 export default function Marketplace() {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
-  const [cartOpen, setCartOpen] = useState(false);
-  const { items, addItem, updateQuantity, removeItem, clearCart, getTotalItems } = useCartStore();
+  const items = useCartStore((state) => state.items);
+  const addItem = useCartStore((state) => state.addItem);
+  const openCart = useCartStore((state) => state.openCart);
+  const totalItems = useCartStore((state) =>
+    state.items.reduce((total, item) => total + item.quantity, 0)
+  );
   const { toast } = useToast();
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['/api/products'],
+    queryFn: () => api.getProducts(),
   });
 
   const handleAddToCart = (product: Product) => {
@@ -33,17 +37,10 @@ export default function Marketplace() {
     });
   };
 
-  const handleCheckout = () => {
-    setCartOpen(false);
-    setLocation('/checkout');
-  };
-
   const filteredProducts = products.filter((product: Product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const totalItems = getTotalItems();
 
   return (
     <div className="min-h-screen bg-background">
@@ -65,7 +62,7 @@ export default function Marketplace() {
 
             {/* Cart Button */}
             <Button
-              onClick={() => setCartOpen(true)}
+              onClick={openCart}
               className="rounded-2xl gap-2 h-12 px-6 relative"
               data-testid="button-open-cart"
             >
@@ -108,15 +105,6 @@ export default function Marketplace() {
         )}
       </div>
 
-      {/* Cart Drawer */}
-      <CartDrawer
-        open={cartOpen}
-        onOpenChange={setCartOpen}
-        items={items}
-        onUpdateQuantity={updateQuantity}
-        onRemoveItem={removeItem}
-        onCheckout={handleCheckout}
-      />
     </div>
   );
 }

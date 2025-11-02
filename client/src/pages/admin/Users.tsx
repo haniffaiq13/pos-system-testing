@@ -22,6 +22,7 @@ export default function Users() {
 
   const { data: users = [] } = useQuery({
     queryKey: ['/api/users'],
+    queryFn: () => api.getUsers(),
   });
 
   const filteredUsers = users.filter((user: any) =>

@@ -7,13 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PointsBadge } from "@/components/PointsBadge";
 import { Search, User } from "lucide-react";
-import { formatRupiah } from "@/utils/money";
 
 export default function Customers() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: users = [] } = useQuery({
     queryKey: ['/api/users'],
+    queryFn: () => api.getUsers(),
   });
 
   const customers = users.filter((user: any) => user.role === 'user');

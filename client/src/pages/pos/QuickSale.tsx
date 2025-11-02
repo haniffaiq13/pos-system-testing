@@ -29,6 +29,7 @@ export default function QuickSale() {
 
   const { data: products = [] } = useQuery({
     queryKey: ['/api/products'],
+    queryFn: () => api.getProducts(),
   });
 
   const { data: preview } = useQuery({

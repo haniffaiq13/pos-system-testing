@@ -37,6 +37,31 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
 }
 
 class RealAdapter implements ApiAdapter {
+  // Auth
+  async login(email: string, password: string): Promise<User> {
+    return request<User>("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+  }
+
+  async register({
+    email,
+    password,
+    role = "user",
+    outletId = null,
+  }: {
+    email: string;
+    password: string;
+    role?: User["role"];
+    outletId?: string | null;
+  }): Promise<User> {
+    return request<User>("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ email, password, role, outletId }),
+    });
+  }
+
   // Products
   async getProducts(): Promise<Product[]> {
     return request<Product[]>('/api/products');

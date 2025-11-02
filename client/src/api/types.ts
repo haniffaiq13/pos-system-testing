@@ -17,6 +17,15 @@ import type {
 } from "@shared/schema";
 
 export interface ApiAdapter {
+  // Auth
+  login(email: string, password: string): Promise<User>;
+  register(input: {
+    email: string;
+    password: string;
+    role?: User["role"];
+    outletId?: string | null;
+  }): Promise<User>;
+
   // Products
   getProducts(): Promise<Product[]>;
   getProduct(id: string): Promise<Product | null>;

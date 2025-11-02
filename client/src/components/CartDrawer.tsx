@@ -153,7 +153,7 @@ export function CartDrawer({
                 className="w-full h-12 rounded-xl font-semibold text-base"
                 data-testid="button-checkout"
               >
-                Proceed to Checkout
+                Go to Payment
               </Button>
             </div>
           </SheetFooter>
